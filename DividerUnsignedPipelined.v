@@ -84,7 +84,7 @@ module DividerPipelined (
                   pipe_dvd[i] <= 0;
                   pipe_dvr[i] <= 0;
                   pipe_rem[i] <= 0;
-                  pipe_quo[i] <= 0;
+                  pipe_quo[i] <= 32'hffff_ffff;
                   pipe_sq[i]  <= 0;
                   pipe_sr[i]  <= 0;
               end else if (!stall) begin

@@ -65,5 +65,55 @@ The datapath consists of the following main components:
   - EX/MEM
   - MEM/WB
 
-Main datapath implementation file:
+---
+
+## 5. Hazard Handling
+
+### 5.1 Data Hazards
+
+- Forwarding from:
+  - EX/MEM stage
+  - MEM/WB stage
+- Pipeline stall for **load-use hazards**
+
+### 5.2 Control Hazards
+
+- Branch decision is made in the **EX stage**
+- Pipeline flush when a branch is taken
+- Program Counter (PC) updated with branch target
+
+---
+
+## 6. Control Unit
+
+The control unit generates the following signals:
+
+- `RegWrite`
+- `MemRead`
+- `MemWrite`
+- `MemToReg`
+- `ALUSrc`
+- `Branch`
+- `ALUOp`
+
+All control signals are properly **pipelined** to match the datapath stages.
+
+---
+
+## 8. Simulation and Testing
+
+### 8.1 Tools
+
+- Icarus Verilog
+- ModelSim / QuestaSim
+- Vivado Simulator
+
+### 8.2 Compile and Run (Icarus Verilog)
+
+```bash
+
+
+
+
+
 

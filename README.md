@@ -1,10 +1,5 @@
 # RV32IM Five-Stage Pipelined RISC-V Processor
 
-A complete implementation of a **32-bit RV32IM RISC-V processor** using a **classic five-stage pipelined datapath**, written in **Verilog HDL**.
-
-This project was developed as part of the *Introduction to SoC* course at  
-**Ho Chi Minh City University of Technology (HCMUT)**.
-
 ---
 
 ## 1. Features

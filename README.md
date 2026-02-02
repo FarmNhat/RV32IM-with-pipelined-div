@@ -60,56 +60,20 @@ Implements the five-stage RV32IM pipeline:
 - Hazard detection and forwarding
 - Sidecar pipelined divider for RV32M
 
-### 4.3 MemorySingleCycle
-- Unified instruction/data memory
+### 4.3 Memory
+- Unified instruction/data memory (can be seperated via simple configuring)
 - 32-bit word-addressable
-- Negative-edge access model
 
 ### 4.4 Supporting Modules
 - `RegFile`: Register file with internal WD bypass
-- `cla.v`: 32-bit carry look-ahead adder
-- `DividerUnsignedPipelined.v`: 8-stage pipelined divider
+- `cla`: 32-bit carry look-ahead adder
+- `DividerPipelined`: 8-stage pipelined divider
 
 ---
 
-## 5. Register File Design
+## 5. Forwarding and Hazard Handling
 
-The register file contains 32 general-purpose registers with:
-- One synchronous write port
-- Two asynchronous read ports
-- Register x0 hard-wired to zero
-
-An internal **WD bypass** is implemented: when a register is written in the same cycle it is read, the write data is forwarded directly to the read port. This ensures correct Decode-stage behavior and simplifies external hazard logic.
-
----
-
-## 6. Pipeline Registers and Naming Convention
-
-Pipeline stage signals follow a strict naming convention:
-- Fetch stage: `f_`
-- Decode stage: `id_`
-- Execute stage: `ex_`
-- Memory stage: `mem_`
-- Writeback stage: `wb_`
-
-Each stage includes a valid bit to support pipeline bubbles, stalls, and flushes.
-
----
-
-## 7. Execute Stage and ALU
-
-The Execute stage performs:
-- Arithmetic and logical operations
-- Branch condition evaluation and target calculation
-- Effective address computation for memory instructions
-
-The ALU is built around a 32-bit carry look-ahead adder, supporting addition and subtraction via operand inversion and carry-in control. For control-flow instructions, the link address (`PC + 4`) is generated and forwarded to Writeback.
-
----
-
-## 8. Forwarding and Hazard Handling
-
-### 8.1 Forwarding Paths
+### 5.1 Forwarding Paths
 To minimize stalls, the following forwarding paths are implemented:
 
 | Path | Description |
@@ -119,7 +83,7 @@ To minimize stalls, the following forwarding paths are implemented:
 | WD | Writeback stage to Decode stage |
 | WM | Load data forwarded to Store data |
 
-### 8.2 Load–Use Hazard
+### 5.2 Load–Use Hazard
 A load–use hazard is detected when:
 - A load instruction is in the Execute stage
 - The following instruction in Decode uses the loaded destination register
@@ -128,10 +92,10 @@ In this case, the pipeline stalls for one cycle and inserts a bubble into the Ex
 
 ---
 
-## 9. RV32M Pipelined Divider Integration
+## 6. RV32IM Pipelined Divider Integration
 
-### 9.1 Sidecar Divider Architecture
-RV32M divide and remainder instructions are handled by a dedicated 8-stage pipelined divider operating in parallel with the main pipeline. Divider instructions are removed from the main Writeback path, and their control information is tracked through an internal FIFO containing:
+### 6.1 Sidecar Divider Architecture
+RV32IM divide and remainder instructions are handled by a dedicated 8-stage pipelined divider operating in parallel with the main pipeline. Divider instructions are removed from the main Writeback path, and their control information is tracked through an internal FIFO containing:
 - Destination register index
 - Write-enable signal
 - Funct3 field
@@ -139,7 +103,7 @@ RV32M divide and remainder instructions are handled by a dedicated 8-stage pipel
 
 At the Writeback stage, divider results take priority when valid.
 
-### 9.2 Divider Hazard Handling
+### 6.2 Divider Hazard Handling
 A barrier-stall mechanism is used to prevent writeback conflicts:
 - Independent divide instructions may be pipelined
 - Non-divide instructions stall while the divider pipeline is busy
@@ -151,13 +115,13 @@ This conservative approach guarantees correctness and simplifies forwarding logi
 
 ## 10. Testing and Simulation
 
-Testing was performed using both directed instruction sequences and waveform inspection:
-- Verification of all forwarding paths
-- Branch taken and not-taken behavior
-- Load–use hazard stalls
-- Independent and dependent divide instruction behavior
+Simulation can be performed using both directed instruction sequences and waveform inspection:
+- Simulation can be done by running the `ISA_runner.v`.
+- The initial Instructions are stored in `mem.hex`
+- The results in RAM and RegFile are stored in `mem_dump.txt` and  `reg_dump.txt`
 
-Cycle-level traces were compared against expected results using the provided Python testbench.
+Implementation can be done on Vivado or any other synthesis tools.
+- Make sure to comment out the `$writememh()` and `$readmemh()` at the Memory and RegFile modules for synthesiability.
 
 ---
 
@@ -169,7 +133,7 @@ Cycle-level traces were compared against expected results using the provided Pyt
 - Improved worst negative slack compared to single-cycle and multi-cycle designs
 
 ### 11.2 Resource Utilization
-- Low LUT and flip-flop usage
+- 3400 LUTs and 2100 flip-flop (big improvement in area usage compared to other RV32IM single-cycle cores)
 - Pipelined divider significantly reduces critical-path pressure
 
 ---
@@ -180,26 +144,7 @@ This project demonstrates a fully functional five-stage pipelined RV32IM process
 
 ---
 
-## 13. Future Work
-
-- Instruction and data cache integration
-- Branch prediction
-- Superscalar issue support
-- CSR and exception handling
-- AXI-based memory interface
-
----
-
-## 14. How to Run
-
-1. Load `DatapathPipelined.v`
-2. Initialize `mem_initial_contents.hex`
-3. Run `runner.v` for simulation
-4. Use the provided Python testbench for trace verification
-
----
-
-## 15. Author
+## 13. Author
 
 Phạm Minh Nhật  
 Faculty of Computer Science and Engineering  
